@@ -1,15 +1,22 @@
 const fs = require('fs-extra')
 const fetch = require('node-fetch')
-
-const templates = require('./templates.js')
+const ejs = require('ejs')
+const format = require('date-fns/format')
+const parse = require('date-fns/parse')
 
 const exportPosts = (posts, rootPath) => {
     if (!rootPath.endsWith('/')) {
         rootPath = rootPath + '/'
     }
 
+    const template = fs.readFileSync('./template.ejs', 'utf8')
+
     posts.forEach(async post => {
-        const postPath = `${__dirname}/${rootPath}${post.slug}`
+        const date = parse(post.date)
+
+        const Ymd = format(date, 'YYYY-MM-DD')
+
+        const postPath = `${__dirname}/${rootPath}${Ymd}-${post.slug}`
         await fs.ensureDir(postPath)
 
         post.images.forEach(async image => {
@@ -24,7 +31,7 @@ const exportPosts = (posts, rootPath) => {
         })
 
         post.title = post.title.replace(/"/g, "\\\"") // escape quotes
-        const fileContents = templates.post(post.title, post.date.toISOString(), post.passthroughUrl, post.markdownContent)
+        const fileContents = ejs.render(template, post)
         await fs.outputFile(`${postPath}/index.md`, fileContents)
     })
 }

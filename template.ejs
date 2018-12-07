@@ -1,0 +1,9 @@
+---
+title: <%= title %>
+category: <%= categories.join(', ') %>
+date: <%= date %>
+<% if (tags.length) { %>tags:<% tags.forEach(function(tag) { %>
+    - <%= tag %><% }) %>
+<% } %>---
+
+<%= markdownContent %>
